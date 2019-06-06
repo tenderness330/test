@@ -1,0 +1,48 @@
+- name: InstallDocker
+  hosts: ranchers
+  remote_user: misawa
+  become: yes
+
+  tasks:
+    - name: Remove old docker.  
+      apt:
+        name: "{{ dockerItems }}"
+        state: absent
+      vars:
+        dockerItems:
+        - docker
+        - docker-engine
+        - docker.io
+        - containerd
+        - runc
+
+    - name: Install require packages.
+      apt:
+        name: "{{ requirePackages  }}"
+        update_cache: yes
+      vars:
+        requirePackages:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+
+    - name: get docker apt-key
+      apt_key:
+        state: present
+        url: https://download.docker.com/linux/ubuntu/gpg
+
+    - name: add repogitry key
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+
+    - name: Install docker
+      apt:
+        name: "{{ dockers }}"
+        update_cache: yes
+      vars:
+        dockers:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
